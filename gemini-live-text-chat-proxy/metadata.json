@@ -1,0 +1,6 @@
+{
+  "name": "Gemini Live Text Chat Proxy",
+  "description": "An experimental translation proxy converting the low-latency Gemini Live bidirectional API into a muted real-time text chatbot with emotional styling and live dual subtitles.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

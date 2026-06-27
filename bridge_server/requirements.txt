@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+websockets==13.1
+google-generativeai
+httpx
+slowapi
+pydantic
+aiosqlite

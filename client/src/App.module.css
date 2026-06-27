@@ -1,0 +1,150 @@
+.container {
+  font-family: sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.statusText {
+  font-size: 0.9rem;
+}
+
+.connected {
+  color: green;
+}
+
+.disconnected {
+  color: red;
+}
+
+.button {
+  padding: 8px 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.btnPrimary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btnSuccess {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+}
+
+.btnDanger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.mainContent {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.chatArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  overflow: hidden;
+}
+
+.messagesList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.noMessages {
+  text-align: center;
+  color: #888;
+  margin-top: 20px;
+}
+
+.messageRow {
+  margin-bottom: 10px;
+}
+
+.messageRowUser {
+  text-align: right;
+}
+
+.messageRowAgent {
+  text-align: left;
+}
+
+.messageBubble {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 70%;
+}
+
+.messageBubbleUser {
+  background-color: #007bff;
+  color: white;
+}
+
+.messageBubbleAgent {
+  background-color: #e9e9eb;
+  color: black;
+}
+
+.inputArea {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  border-top: 1px solid #ccc;
+  background-color: white;
+}
+
+.inputField {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.footer {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #eee;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}

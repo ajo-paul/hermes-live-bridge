@@ -1,0 +1,38 @@
+services:
+  bridge_server:
+    build: ./bridge_server
+    ports:
+      - "8000:8000"
+    depends_on:
+      hermes_agent:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - AGENT_URL=http://hermes_agent:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  
+  hermes_agent:
+    build: ./hermes_agent
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

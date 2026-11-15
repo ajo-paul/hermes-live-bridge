@@ -1,4 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 import asyncio
 import base64
@@ -14,6 +15,10 @@ from starlette.requests import Request
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from .flash_live_client import FlashLiveClient
 from .intent_parser import parse_intent
@@ -141,9 +146,14 @@ async def call_agent_async(prompt: str, session_id: str, http_client: httpx.Asyn
         if hb_task:
             hb_task.cancel()
 
-@app.get("/")
-async def root():
-    return {"message": "Hermes-Live Bridge Server is running"}
+# Serve static frontend in production if exists
+frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
+if os.path.isdir(frontend_dist):
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+else:
+    @app.get("/")
+    async def root():
+        return {"message": "Hermes-Live Bridge Server is running (Frontend not built)"}
 
 @app.get("/health")
 @limiter.limit("5/minute")
@@ -192,11 +202,11 @@ async def websocket_endpoint(websocket: WebSocket):
                         if msg.get("type") == "setup":
                             await session_client.apply_settings(msg.get("settings", {}))
                         # If it's a text message, use the specialized method
-                        elif msg.get("type") == "text":
-                            await session_client.send_text(msg.get("content", ""))
-                        elif msg.get("type") == "audio":
+                        elif msg.get("type") in ["text", "message"]:
+                            await session_client.send_text(msg.get("content", msg.get("text", "")))
+                        elif msg.get("type") in ["audio", "audio_input"]:
                             # Expect base64 encoded audio bytes from browser
-                            audio_bytes = base64.b64decode(msg.get("content", ""))
+                            audio_bytes = base64.b64decode(msg.get("content", msg.get("data", "")))
                             await session_client.send_audio(audio_bytes)
                         elif msg.get("type") == "get_status":
                             # Handle status query from user
@@ -263,8 +273,44 @@ async def websocket_endpoint(websocket: WebSocket):
                     except json.JSONDecodeError:
                         flash_msg = flash_msg_raw # Fallback to raw
                     
-                    # Forward the message (whether raw or processed) to the user
-                    await websocket.send_text(flash_msg if isinstance(flash_msg, str) else json.dumps(flash_msg))
+                    # --- Format Gemini payload for React UI ---
+                    if isinstance(flash_msg, dict) and "serverContent" in flash_msg:
+                        server_content = flash_msg["serverContent"]
+                        
+                        if "modelTurn" in server_content:
+                            for part in server_content["modelTurn"].get("parts", []):
+                                if "text" in part:
+                                    await websocket.send_text(json.dumps({"type": "text_chunk", "text": part["text"]}))
+                                if "inlineData" in part:
+                                    await websocket.send_text(json.dumps({"type": "audio_chunk", "audio": part["inlineData"].get("data", "")}))
+                        
+                        if "outputTranscription" in server_content and "text" in server_content["outputTranscription"]:
+                            await websocket.send_text(json.dumps({"type": "text_chunk", "text": server_content["outputTranscription"]["text"]}))
+                            
+                        if "groundingMetadata" in server_content:
+                            gm = server_content["groundingMetadata"]
+                            web_queries = gm.get("webSearchQueries", [])
+                            chunks = gm.get("groundingChunks", [])
+                            formatted_chunks = []
+                            for c in chunks:
+                                if "web" in c:
+                                    formatted_chunks.append({"title": c["web"].get("title", ""), "uri": c["web"].get("uri", "")})
+                            if web_queries or formatted_chunks:
+                                await websocket.send_text(json.dumps({
+                                    "type": "grounding_metadata",
+                                    "webSearchQueries": web_queries,
+                                    "groundingChunks": formatted_chunks
+                                }))
+                                
+                        if server_content.get("turnComplete"):
+                            await websocket.send_text(json.dumps({"type": "turn_complete"}))
+                            
+                        if server_content.get("interrupted"):
+                            await websocket.send_text(json.dumps({"type": "interrupted"}))
+                            
+                    else:
+                        # Forward the raw message (like setupComplete)
+                        await websocket.send_text(flash_msg if isinstance(flash_msg, str) else json.dumps(flash_msg))
                 except WebSocketDisconnect:
                     logger.info("User disconnected from bridge (forward_flash_to_user)")
                     raise # Re-raise to stop the loop and trigger cancellation of other tasks

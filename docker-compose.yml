@@ -1,6 +1,8 @@
 services:
   bridge_server:
-    build: ./bridge_server
+    build:
+      context: .
+      dockerfile: bridge_server/Dockerfile
     ports:
       - "8000:8000"
     depends_on:

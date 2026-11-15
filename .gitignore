@@ -1,0 +1,15 @@
+
+# Build, runtime & OS artifacts
+.DS_Store
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.wrangler/
+.next/
+dist/
+.env
+.env.local
+*.log
+*.db
+*.sqlite*

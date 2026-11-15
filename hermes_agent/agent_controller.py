@@ -5,7 +5,7 @@ import os
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from collections import deque
-from .smart_edit_logic import tool_smart_edit
+from smart_edit_logic import tool_smart_edit
 
 # --- SECURITY CONFIGURATION ---
 PROJECT_ROOT = os.getenv("PROJECT_ROOT", "/app/hermes-live-bridge")

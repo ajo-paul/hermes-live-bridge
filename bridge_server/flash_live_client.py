@@ -82,7 +82,7 @@ class FlashLiveClient:
                 kwargs = {
                     "ping_interval": 20,
                     "ping_timeout": 10,
-                    "additional_headers": {
+                    "extra_headers": {
                         "x-goog-api-client": "google-genai-sdk/2.8.0 gl-node/v22.22.2",
                         "user-agent": "google-genai-sdk/2.8.0 gl-node/v22.22.2"
                     }
